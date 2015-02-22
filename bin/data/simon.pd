@@ -1,0 +1,6 @@
+#N canvas 496 370 450 300 10;
+#X obj 27 28 adc~ 1;
+#X obj 27 54 fiddle~ 1024 1;
+#X obj 27 80 s pdFiddle;
+#X connect 0 0 1 0;
+#X connect 1 0 2 0;
