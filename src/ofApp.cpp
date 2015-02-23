@@ -70,9 +70,9 @@ void ofApp::setup(){
 	ofBackground(simonDarkBlue);
 
 	ofTrueTypeFont::setGlobalDpi(72);
-	font.loadFont("verdana.ttf", 90);
-	font.setLineHeight(34.0f);
-	font.setLetterSpacing(1.035);
+	fontBig.loadFont("Arvo-Bold.ttf", 200);
+	fontMedium.loadFont("Arvo-Bold.ttf", 72);
+	fontSmall.loadFont("Arvo-Bold.ttf", 36);
 	
 	// VARIABLES -----
 	fromFiddle = 0;
@@ -84,6 +84,11 @@ void ofApp::setup(){
 	noteLength = 500;
 	breathLength = 100;
 	playbackLength = 750;
+	
+	bIsTitle = true;
+	bIsPlaying = false;
+	bIsLost = false;
+	bIsWon = false;
 }
 
 //--------------------------------------------------------------
@@ -183,14 +188,114 @@ void ofApp::update(){
 }
 
 //--------------------------------------------------------------
-void ofApp::draw(){
+void ofApp::drawTitle(){
 
-//	ofLog() << note;
+	ofBackground(simonDarkBlue);
+	
+	int marginX = ofGetWidth() * 0.1;
+	int marginY = ofGetHeight() * 0.1;
+	
+	// play button
+	ofSetColor(simonRed);
+	ofRectangle bigButton = ofRectangle(marginX, marginY, ofGetWidth() * 0.8, ofGetWidth() * 0.8);
+	ofRect(bigButton);
+	
+	// options buttons
+	ofSetColor(simonYellow);
+	ofRectangle notesButton = ofRectangle(marginX, ofGetWidth() * 0.8 + marginY * 2, ofGetWidth() * 0.35, marginY);
+	ofRectangle colorsButton = ofRectangle(marginX * 2 + ofGetWidth() * 0.35, ofGetWidth() * 0.8 + marginY * 2, ofGetWidth() * 0.35, marginY);
+	ofRect(notesButton);
+	ofRect(colorsButton);
+	
+	// text
+	ofSetColor(simonDarkBlue);
+	string playString = "PLAY";
+	fontMedium.drawString(playString, bigButton.getCenter()[0]	- fontMedium.stringWidth(playString) / 2, bigButton.getCenter()[1]	 + fontMedium.stringHeight(playString) / 2);
+	
+	string notesString = "NOTES";
+	string colorsString = "COLORS";
+	fontSmall.drawString(notesString, notesButton.getCenter()[0]	- fontSmall.stringWidth(notesString) / 2, notesButton.getCenter()[1]	 + fontSmall.stringHeight(notesString) / 2);
+	fontSmall.drawString(colorsString, colorsButton.getCenter()[0]	- fontSmall.stringWidth(colorsString) / 2, colorsButton.getCenter()[1] + fontSmall.stringHeight(colorsString) / 2);
+
+}
+
+//--------------------------------------------------------------
+void ofApp::drawLose(){
+
+	ofBackground(simonDarkBlue);
+	
+	int marginX = ofGetWidth() * 0.1;
+	int marginY = ofGetHeight() * 0.1;
+	
+	// play button
+	ofSetColor(simonRed);
+	ofRectangle bigButton = ofRectangle(marginX, marginY, ofGetWidth() * 0.8, ofGetWidth() * 0.8);
+	ofRect(bigButton);
+	
+	// options buttons
+	ofSetColor(simonYellow);
+	ofRectangle tryButton = ofRectangle(marginX, ofGetWidth() * 0.8 + marginY * 2, ofGetWidth() * 0.8, marginY);
+	ofRect(tryButton);
+	
+	// text
+	ofSetColor(simonDarkBlue);
+	string playString = "YOU LOSE";
+	fontMedium.drawString(playString, bigButton.getCenter()[0]	- fontMedium.stringWidth(playString) / 2, bigButton.getCenter()[1]	 + fontMedium.stringHeight(playString) / 2);
+	
+	string tryString = "TRY AGAIN";
+	fontSmall.drawString(tryString, tryButton.getCenter()[0]	- fontSmall.stringWidth(tryString) / 2, tryButton.getCenter()[1] + fontSmall.stringHeight(tryString) / 2);
+	
+}
+
+//--------------------------------------------------------------
+void ofApp::drawWin(){
+
+	ofBackground(simonDarkBlue);
+	
+	int marginX = ofGetWidth() * 0.1;
+	int marginY = ofGetHeight() * 0.1;
+	
+	// play button
+	ofSetColor(simonRed);
+	ofRectangle bigButton = ofRectangle(marginX, marginY, ofGetWidth() * 0.8, ofGetWidth() * 0.8);
+	ofRect(bigButton);
+	
+	// options buttons
+	ofSetColor(simonYellow);
+	ofRectangle tryButton = ofRectangle(marginX, ofGetWidth() * 0.8 + marginY * 2, ofGetWidth() * 0.8, marginY);
+	ofRect(tryButton);
+	
+	// text
+	ofSetColor(simonDarkBlue);
+	string playString = "YOU WIN!";
+	fontMedium.drawString(playString, bigButton.getCenter()[0]	- fontMedium.stringWidth(playString) / 2, bigButton.getCenter()[1]	 + fontMedium.stringHeight(playString) / 2);
+	
+	string tryString = "TRY AGAIN";
+	fontSmall.drawString(tryString, tryButton.getCenter()[0]	- fontSmall.stringWidth(tryString) / 2, tryButton.getCenter()[1] + fontSmall.stringHeight(tryString) / 2);
+	
+}
+
+//--------------------------------------------------------------
+void ofApp::drawCard(){
+
 	ofBackground(colorMap[song[counter]]);
 	ofSetColor(simonDarkBlue);
-	font.drawString(song[counter],
-		ofGetWidth() / 2 - font.stringWidth(song[counter]) / 2,
-		ofGetHeight() / 2 - font.stringHeight(song[counter]) / 2);
+	fontBig.drawString(song[counter], ofGetWidth() / 2 - fontBig.stringWidth(song[counter]) / 2, ofGetHeight() / 2);
+
+}
+
+//--------------------------------------------------------------
+void ofApp::draw(){
+
+	if (bIsTitle) {
+		drawTitle();
+	} else if (bIsLost) {
+		drawLose();
+	} else if (bIsWon) {
+		drawWin();
+	} else {
+		drawCard();
+	}
 
 }
 

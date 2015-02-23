@@ -18,6 +18,11 @@ class ofApp : public ofBaseApp, public PdReceiver {
 		void play();
 		void listen();
 	
+		void drawTitle();
+		void drawCard();
+		void drawLose();
+		void drawWin();
+	
 		// PD -----
 		ofxPd pd;
 		void audioOut(float* output, int bufferSize, int numChannels);
@@ -26,7 +31,9 @@ class ofApp : public ofBaseApp, public PdReceiver {
 		void receiveBang(const std::string& dest);
 	
 		// OF -----
-		ofTrueTypeFont font;
+		ofTrueTypeFont fontBig;
+		ofTrueTypeFont fontMedium;
+		ofTrueTypeFont fontSmall;
 	
 		vector<string> song;
 		void makeSong(int length);
@@ -45,4 +52,9 @@ class ofApp : public ofBaseApp, public PdReceiver {
 		int noteLength;
 		int breathLength;
 		int playbackLength;
+	
+		bool bIsTitle;
+		bool bIsPlaying;
+		bool bIsLost;
+		bool bIsWon;
 };
