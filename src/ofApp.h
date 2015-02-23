@@ -13,7 +13,8 @@ class ofApp : public ofBaseApp, public PdReceiver {
 		void update();
 		void draw();
 
-		void keyPressed(int key);
+		void mousePressed(int x, int y, int button);
+		void mouseReleased(int x, int y, int button);
 	
 		void play();
 		void listen();
@@ -57,4 +58,15 @@ class ofApp : public ofBaseApp, public PdReceiver {
 		bool bIsPlaying;
 		bool bIsLost;
 		bool bIsWon;
+	
+		bool bHasNotes;
+		bool bHasColors;
+	
+		bool bIsPressing;
+	
+		ofRectangle bigButton;
+		ofRectangle tryButton;
+		ofRectangle notesButton;
+		ofRectangle colorsButton;
+		
 };

@@ -68,6 +68,7 @@ void ofApp::setup(){
 
 	//  OF SETUP -----
 	ofBackground(simonDarkBlue);
+	ofSetLineWidth(5);
 
 	ofTrueTypeFont::setGlobalDpi(72);
 	fontBig.loadFont("Arvo-Bold.ttf", 200);
@@ -89,6 +90,11 @@ void ofApp::setup(){
 	bIsPlaying = false;
 	bIsLost = false;
 	bIsWon = false;
+	
+	bHasNotes = true;
+	bHasColors = true;
+	
+	bIsPressing = false;
 }
 
 //--------------------------------------------------------------
@@ -171,18 +177,20 @@ void ofApp::listen(){
 //--------------------------------------------------------------
 void ofApp::update(){
 
-	if (counter <= currentNote) {
-    play();
-		ofLog() << counter;
-	}
-//	listen();
+	if (bIsPlaying) {
+		if (counter <= currentNote) {
+			play();
+			ofLog() << counter;
+		}
+	//	listen();
 
-	if (counter == currentNote) {
-		currentNote++;
-		counter = 0;
-		ofSleepMillis(1000);
-	} else {
-		counter++;
+		if (counter == currentNote) {
+			currentNote++;
+			counter = 0;
+			ofSleepMillis(1000);
+		} else {
+			counter++;
+		}
 	}
 	
 }
@@ -196,25 +204,53 @@ void ofApp::drawTitle(){
 	int marginY = ofGetHeight() * 0.1;
 	
 	// play button
+	bigButton = ofRectangle(marginX, marginY, ofGetWidth() * 0.8, ofGetWidth() * 0.8);
+	
 	ofSetColor(simonRed);
-	ofRectangle bigButton = ofRectangle(marginX, marginY, ofGetWidth() * 0.8, ofGetWidth() * 0.8);
+	if (bIsPressing) {
+		ofNoFill();
+	}
 	ofRect(bigButton);
+	ofFill();
 	
 	// options buttons
+	notesButton = ofRectangle(marginX, ofGetWidth() * 0.8 + marginY * 2, ofGetWidth() * 0.35, marginY);
+	colorsButton = ofRectangle(marginX * 2 + ofGetWidth() * 0.35, ofGetWidth() * 0.8 + marginY * 2, ofGetWidth() * 0.35, marginY);
+	
 	ofSetColor(simonYellow);
-	ofRectangle notesButton = ofRectangle(marginX, ofGetWidth() * 0.8 + marginY * 2, ofGetWidth() * 0.35, marginY);
-	ofRectangle colorsButton = ofRectangle(marginX * 2 + ofGetWidth() * 0.35, ofGetWidth() * 0.8 + marginY * 2, ofGetWidth() * 0.35, marginY);
+	if (!bHasNotes) {
+		ofNoFill();
+	}
 	ofRect(notesButton);
+	ofFill();
+	
+	if (!bHasColors) {
+		ofNoFill();
+	}
 	ofRect(colorsButton);
+	ofFill();
 	
 	// text
-	ofSetColor(simonDarkBlue);
 	string playString = "PLAY";
-	fontMedium.drawString(playString, bigButton.getCenter()[0]	- fontMedium.stringWidth(playString) / 2, bigButton.getCenter()[1]	 + fontMedium.stringHeight(playString) / 2);
-	
 	string notesString = "NOTES";
 	string colorsString = "COLORS";
+	
+	ofSetColor(simonDarkBlue);
+	if (bIsPressing) {
+		ofSetColor(simonRed);
+	}
+	fontMedium.drawString(playString, bigButton.getCenter()[0]	- fontMedium.stringWidth(playString) / 2, bigButton.getCenter()[1]	 + fontMedium.stringHeight(playString) / 2);
+	
+	ofSetColor(simonDarkBlue);
+	if (!bHasNotes) {
+		ofSetColor(simonYellow);
+	}
 	fontSmall.drawString(notesString, notesButton.getCenter()[0]	- fontSmall.stringWidth(notesString) / 2, notesButton.getCenter()[1]	 + fontSmall.stringHeight(notesString) / 2);
+
+	ofSetColor(simonDarkBlue);
+	if (!bHasColors) {
+		ofSetColor(simonYellow);
+	}
 	fontSmall.drawString(colorsString, colorsButton.getCenter()[0]	- fontSmall.stringWidth(colorsString) / 2, colorsButton.getCenter()[1] + fontSmall.stringHeight(colorsString) / 2);
 
 }
@@ -229,12 +265,12 @@ void ofApp::drawLose(){
 	
 	// play button
 	ofSetColor(simonRed);
-	ofRectangle bigButton = ofRectangle(marginX, marginY, ofGetWidth() * 0.8, ofGetWidth() * 0.8);
+	bigButton = ofRectangle(marginX, marginY, ofGetWidth() * 0.8, ofGetWidth() * 0.8);
 	ofRect(bigButton);
 	
 	// options buttons
 	ofSetColor(simonYellow);
-	ofRectangle tryButton = ofRectangle(marginX, ofGetWidth() * 0.8 + marginY * 2, ofGetWidth() * 0.8, marginY);
+	tryButton = ofRectangle(marginX, ofGetWidth() * 0.8 + marginY * 2, ofGetWidth() * 0.8, marginY);
 	ofRect(tryButton);
 	
 	// text
@@ -257,12 +293,12 @@ void ofApp::drawWin(){
 	
 	// play button
 	ofSetColor(simonRed);
-	ofRectangle bigButton = ofRectangle(marginX, marginY, ofGetWidth() * 0.8, ofGetWidth() * 0.8);
+	bigButton = ofRectangle(marginX, marginY, ofGetWidth() * 0.8, ofGetWidth() * 0.8);
 	ofRect(bigButton);
 	
 	// options buttons
 	ofSetColor(simonYellow);
-	ofRectangle tryButton = ofRectangle(marginX, ofGetWidth() * 0.8 + marginY * 2, ofGetWidth() * 0.8, marginY);
+	tryButton = ofRectangle(marginX, ofGetWidth() * 0.8 + marginY * 2, ofGetWidth() * 0.8, marginY);
 	ofRect(tryButton);
 	
 	// text
@@ -300,6 +336,35 @@ void ofApp::draw(){
 }
 
 //--------------------------------------------------------------
-void ofApp::keyPressed(int key){
+void ofApp::mousePressed(int x, int y, int button){
+
+	if (bIsTitle) {
+		if (bigButton.inside(x, y)) {
+			bIsPressing = true;
+		} else if (notesButton.inside(x, y)) {
+			bHasNotes = !bHasNotes;
+		} else if (colorsButton.inside(x, y)) {
+			bHasColors = !bHasColors;
+		}
+	} else if (bIsLost) {
+		
+	} else if (bIsWon) {
+		
+	} else {
+		
+	}
+
+}
+
+//--------------------------------------------------------------
+void ofApp::mouseReleased(int x, int y, int button){
+	if (bIsTitle) {
+		if (bigButton.inside(x, y)) {
+			bIsPressing = false;
+			bIsTitle = false;
+			bIsPlaying = true;
+			drawCard();
+		}
+	}
 
 }
