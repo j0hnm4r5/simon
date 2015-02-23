@@ -29,8 +29,8 @@ void ofApp::setup(){
 		scale[0] = "C";
 		scale[1] = "D";
 		scale[2] = "E";
-		scale[3] = "G";
-		scale[4] = "A";
+		scale[3] = "F";
+		scale[4] = "G";
 	}
 
 	//	COLOR MAP -----
@@ -38,8 +38,8 @@ void ofApp::setup(){
 		colorMap["C"] = simonPink;
 		colorMap["D"] = simonLightBlue;
 		colorMap["E"] = simonGreen;
-		colorMap["G"] = simonPurple;
-		colorMap["A"] = simonYellow;
+		colorMap["F"] = simonPurple;
+		colorMap["G"] = simonYellow;
 	}
 
 	//	PD SETUP -----
@@ -59,13 +59,6 @@ void ofApp::setup(){
 
 	ofSoundStreamSetup(numOutChannels, numInChannels, this, sampleRate, ofxPd::blockSize() * ticksPerBuffer, 1);
 
-	// make the song
-	songLength = 10;
-	makeSong(songLength);
-//	for (int i = 0; i < songLength; i ++) {
-//		ofLog() << song[i];
-//	}
-
 	//  OF SETUP -----
 	ofBackground(simonDarkBlue);
 	ofSetLineWidth(5);
@@ -76,15 +69,12 @@ void ofApp::setup(){
 	fontSmall.loadFont("Arvo-Bold.ttf", 36);
 	
 	// VARIABLES -----
-	fromFiddle = 0;
+	fromFiddle = 0.0;
+	
 	octave = 2;
 	
-	currentNote = 0;
-	counter = 0;
-	
-	noteLength = 500;
-	breathLength = 100;
-	playbackLength = 750;
+	noteLength = 750;
+	breathLength = 200;
 	
 	bIsTitle = true;
 	bIsPlaying = false;
@@ -95,12 +85,24 @@ void ofApp::setup(){
 	bHasColors = true;
 	
 	bIsPressing = false;
+	
+	difficulty = 3;
+	songLength = 20;
 }
 
 //--------------------------------------------------------------
 void ofApp::makeSong(int length){
+	int lastNum = 0;
+	int rand = 0;
+	
+	song.clear();
+	
 	for (int i = 0; i < length; i++) {
-		song.push_back(scale[(int)ofRandom(sizeof(scale) / sizeof(*scale))]);
+		while (rand == lastNum) {
+			rand = (int)ofRandom(sizeof(scale) / sizeof(*scale));
+		}
+		song.push_back(scale[rand]);
+		lastNum = rand;
 	}
 }
 
@@ -118,20 +120,10 @@ void ofApp::audioIn(float *input, int bufferSize, int numChannels) {
 void ofApp::receiveFloat(const std::string& dest, float value) {
 
 	if (dest == "pdFiddle") {
-		fromFiddle = (int)value;
+		fromFiddle = value;
 	}
 
 }
-
-//--------------------------------------------------------------
-void ofApp::receiveBang(const std::string& dest) {
-
-	if (dest == "pdFiddleBang") {
-		fromFiddleBang = true;
-	}
-
-}
-
 
 //--------------------------------------------------------------
 void ofApp::play(){
@@ -150,28 +142,41 @@ void ofApp::play(){
 void ofApp::listen(){
 
 	vector<int> playback;
-
-	int time = ofGetElapsedTimeMillis();
-//	ofLog() << time;
 	
-	int numNotes = 0;
+	float lastFiddle = 0.0;
 	
-	while (ofGetElapsedTimeMillis() < time + (currentNote + 1) * playbackLength) {
-		ofLog() << fromFiddleBang;
-		if (fromFiddleBang) {
-			playback.push_back(fromFiddle);
-			numNotes++;
+	for (int i = 0; i < currentNote; i++) {
+		int start = ofGetElapsedTimeMillis();
+		float runningTotal = 0;
+		int numSamples = 0;
+		while (ofGetElapsedTimeMillis() < start + noteLength) {
+			
+			if (lastFiddle != fromFiddle) {
+				ofLog() << (int)fromFiddle;
+				runningTotal += fromFiddle;
+				numSamples++;
+			}
+			
+			lastFiddle = fromFiddle;
 		}
-		fromFiddleBang = false;
+//		ofLog() << (int)(runningTotal / numSamples);
+		playback.push_back((int)(runningTotal / numSamples));
+		ofSleepMillis(breathLength);
 	}
 	
 	
-	for (int i = 0; i < numNotes; i ++) {
-		ofLog() << playback[i];
+	for (int i = 0; i < currentNote; i ++) {
+		
+		ofLog() << playback[i] << " " << midiTable[song[i]] * octave;
+
+		if (currentNote > 1) {
+			if (playback[i] >= midiTable[song[i]] * octave + difficulty || playback[i] <= midiTable[song[i]] * octave - difficulty) {
+				bIsPlaying = false;
+				bIsLost = true;
+			}
+		}
+		
 	}
-	
-	
-	
 }
 
 //--------------------------------------------------------------
@@ -180,16 +185,23 @@ void ofApp::update(){
 	if (bIsPlaying) {
 		if (counter <= currentNote) {
 			play();
-			ofLog() << counter;
+//			ofLog() << counter;
 		}
-	//	listen();
 
 		if (counter == currentNote) {
 			currentNote++;
 			counter = 0;
+			
+			listen();
+			
 			ofSleepMillis(1000);
 		} else {
 			counter++;
+		}
+		
+		if (currentNote == songLength) {
+			bIsPlaying = false;
+			bIsWon = true;
 		}
 	}
 	
@@ -347,9 +359,23 @@ void ofApp::mousePressed(int x, int y, int button){
 			bHasColors = !bHasColors;
 		}
 	} else if (bIsLost) {
-		
+		if (tryButton.inside(x, y)) {
+			bIsLost = false;
+			bIsPlaying = true;
+			
+			makeSong(songLength);
+			currentNote = 0;
+			counter = 0;
+		}
 	} else if (bIsWon) {
-		
+		if (tryButton.inside(x, y)) {
+			bIsWon = false;
+			bIsPlaying = true;
+			
+			makeSong(songLength);
+			currentNote = 0;
+			counter = 0;
+		}
 	} else {
 		
 	}
@@ -363,7 +389,10 @@ void ofApp::mouseReleased(int x, int y, int button){
 			bIsPressing = false;
 			bIsTitle = false;
 			bIsPlaying = true;
-			drawCard();
+			
+			makeSong(songLength);
+			currentNote = 0;
+			counter = 0;
 		}
 	}
 

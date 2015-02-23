@@ -29,7 +29,6 @@ class ofApp : public ofBaseApp, public PdReceiver {
 		void audioOut(float* output, int bufferSize, int numChannels);
 		void audioIn(float* input, int bufferSize, int numChannels);
 		void receiveFloat(const std::string& dest, float value);
-		void receiveBang(const std::string& dest);
 	
 		// OF -----
 		ofTrueTypeFont fontBig;
@@ -43,16 +42,15 @@ class ofApp : public ofBaseApp, public PdReceiver {
 		string scale[5];
 	
 		int songLength;
-		int fromFiddle;
-		bool fromFiddleBang;
 		int octave;
+	
+		float fromFiddle;
 	
 		int currentNote;
 		int counter;
 
 		int noteLength;
 		int breathLength;
-		int playbackLength;
 	
 		bool bIsTitle;
 		bool bIsPlaying;
@@ -68,5 +66,7 @@ class ofApp : public ofBaseApp, public PdReceiver {
 		ofRectangle tryButton;
 		ofRectangle notesButton;
 		ofRectangle colorsButton;
+	
+		int difficulty;
 		
 };
