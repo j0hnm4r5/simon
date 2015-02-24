@@ -326,9 +326,18 @@ void ofApp::drawWin(){
 //--------------------------------------------------------------
 void ofApp::drawCard(){
 
-	ofBackground(colorMap[song[counter]]);
-	ofSetColor(simonDarkBlue);
-	fontBig.drawString(song[counter], ofGetWidth() / 2 - fontBig.stringWidth(song[counter]) / 2, ofGetHeight() / 2);
+	if (bHasColors) {
+		ofBackground(colorMap[song[counter]]);
+		ofSetColor(simonDarkBlue);
+	} else {
+		ofBackground(simonDarkBlue);
+		ofSetColor(simonYellow);
+	}
+	
+	if (bHasNotes) {
+    fontBig.drawString(song[counter], ofGetWidth() / 2 - fontBig.stringWidth(song[counter]) / 2, ofGetHeight() / 2);
+	}
+	
 
 }
 
